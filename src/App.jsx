@@ -12,6 +12,7 @@ function App() {
   const [temperature, setTemperature] = useState();
   const [location, setLocation] = useState("");
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const success = (pos) => {
@@ -47,11 +48,13 @@ function App() {
 
   const getWeatherCity = (event) => {
     event.preventDefault();
+    setIsLoading(true);
     axios
       .get(
         `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}`
       )
       .then((response) => {
+        setIsLoading(false);
         setError(false);
         const celsius = (response.data.main.temp - 273.15).toFixed(1);
         const farenheit = ((celsius * 9) / 5 + 32).toFixed(1);
@@ -61,6 +64,7 @@ function App() {
         setLocation("");
       })
       .catch((error) => {
+        setIsLoading(false);
         console.error(error);
         setError(true);
         setLocation("");
@@ -76,7 +80,7 @@ function App() {
         }.jpg)`,
       }}
     >
-      {weather ? (
+      {weather && !isLoading ? (
         <div>
           <form className="form-style" onSubmit={getWeatherCity} action="">
             <img src={SearchIcon} alt="" />
@@ -94,14 +98,13 @@ function App() {
           </form>
           {error && (
             <p id="text" className="error-text">
-              {" "}
               🔴🟡🟢 CITY NOT FOUND 🟢🟡🔴
             </p>
           )}
           <WeatherCard weather={weather} temperature={temperature} />
         </div>
       ) : (
-        <Loading />
+        <Loading type={weather ? "circle" : ""} />
       )}
     </div>
   );
